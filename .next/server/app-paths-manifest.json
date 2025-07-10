@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/create-restaurant/page": "app/create-restaurant/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/my-restaurants/page": "app/my-restaurants/page.js",
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js",
+  "/restaurant/[id]/edit/page": "app/restaurant/[id]/edit/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/restaurants/[id]/view/page": "app/restaurants/[id]/view/page.js",
+  "/restaurants/page": "app/restaurants/page.js"
+}
