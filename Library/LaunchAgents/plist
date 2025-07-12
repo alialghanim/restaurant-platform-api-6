@@ -7,11 +7,11 @@
 
   <key>ProgramArguments</key>
   <array>
-    <string>/Users/nadine/Desktop/restaurant-platform-api-6/Library/LaunchAgents/auto-push.sh</string>
+    <string>/Users/nadine/Documents/auto-push-backend.sh</string>
   </array>
 
   <key>WorkingDirectory</key>
-  <string>/Users/nadine/Desktop/restaurant-platform-api-6</string>
+  <string>/Users/nadine/Documents</string>
 
   <key>RunAtLoad</key>
   <true/>
