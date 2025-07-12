@@ -41,7 +41,7 @@ domainName?: string;
 
   @IsString()
   @IsOptional()
-  customPhone?: string;
+  contactNumber?: string;
 
   @IsOptional()
   @IsBoolean()

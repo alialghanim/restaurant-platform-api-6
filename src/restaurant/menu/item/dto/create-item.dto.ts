@@ -1,4 +1,5 @@
 import { IsString, IsUUID, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateItemDto {
   @IsString()
@@ -8,6 +9,7 @@ export class CreateItemDto {
   @IsString()
   description?: string;
 
+  @Type(() => Number)
   @IsNumber()
   price: number;
 
@@ -15,6 +17,7 @@ export class CreateItemDto {
   isUnlimited: boolean;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   quantity?: number;
 

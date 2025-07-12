@@ -19,6 +19,7 @@ import { extname } from 'path';
 import { ItemService } from './item.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { UpdateOptionsDto } from './dto/update-options.dto';
 
 @Controller('restaurants/:restaurantId/items')
 export class ItemController {
@@ -43,6 +44,24 @@ export class ItemController {
     return this.itemService.create(restaurantId, dto);
   }
 
+  // حفظ السكاشن والخيارات
+@Post(':itemId/options')
+@UseGuards(AuthGuard('jwt'))
+updateOptions(
+  @Param('itemId') itemId: string,
+  @Body() dto: UpdateOptionsDto,
+) {
+  this.validateUUID(itemId, 'itemId');
+  return this.itemService.updateOptions(itemId, dto);
+}
+
+// جلب السكاشن والخيارات
+@Get(':itemId/options')
+getOptions(@Param('itemId') itemId: string) {
+  this.validateUUID(itemId, 'itemId');
+  return this.itemService.getOptions(itemId);
+}
+
   @Get('for-category/:categoryId')
   findByCategory(
     @Param('restaurantId') restaurantId: string,
@@ -52,6 +71,7 @@ export class ItemController {
     this.validateUUID(categoryId, 'categoryId');
     return this.itemService.findByCategory(categoryId);
   }
+
 @Get(':itemId')
 getItem(
   @Param('restaurantId') restaurantId: string,
@@ -61,12 +81,12 @@ getItem(
   this.validateUUID(itemId, 'itemId');
   return this.itemService.findOneForRestaurant(restaurantId, itemId);
 }
+
   @Get()
   findAllForRestaurant(@Param('restaurantId') restaurantId: string) {
     this.validateUUID(restaurantId, 'restaurantId');
     return this.itemService.findAllForRestaurant(restaurantId);
   }
-
 
   @Patch(':itemId')
   @UseGuards(AuthGuard('jwt'))
@@ -88,7 +108,6 @@ delete(@Param('itemId') itemId: string) {
   return this.itemService.delete(itemId); // ✅ بدل remove
 }
 
-
   @Post(':itemId/upload-image')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
@@ -102,6 +121,7 @@ delete(@Param('itemId') itemId: string) {
       }),
     }),
   )
+
   async uploadImage(
     @Param('itemId') itemId: string,
     @UploadedFile() file: Express.Multer.File,

@@ -6,9 +6,10 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 
-import { Restaurant } from '../../entities/restaurant.entity';
+import { Restaurant } from '../../../entities/restaurant.entity';
 import { Item } from '../../item/entities/item.entity';
 
 @Entity()
@@ -25,10 +26,14 @@ export class Category {
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.categories, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'restaurantId' })
   restaurant: Restaurant;
 
-@OneToMany(() => Item, (item) => item.restaurant)
-items: Item[];
+  @Column()
+  restaurantId: string;
+
+  @OneToMany(() => Item, (item) => item.category)
+  items: Item[];
 
   @CreateDateColumn()
   createdAt: Date;

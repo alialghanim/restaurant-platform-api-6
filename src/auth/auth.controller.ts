@@ -8,11 +8,17 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateNameDto } from './dto/update-name.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
+constructor(
+  private readonly authService: AuthService,
+  @InjectRepository(User)
+  private readonly userRepository: Repository<User>,
+) {}
 @Post('/register')
 register(@Body() dto: RegisterDto) {
   return this.authService.register(dto); // ← الآن يرجع التوكن
@@ -34,13 +40,18 @@ register(@Body() dto: RegisterDto) {
 
 @Get('/me')
 @UseGuards(JwtAuthGuard)
-getMe(@Req() req) {
-  const user = req.user;
+async getMe(@Req() req) {
+  const user = await this.userRepository.findOne({
+    where: { id: req.user.id },
+    relations: ['restaurant'], // تأكد إن العلاقة موجودة
+  });
+
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     phone: user.phone,
+    restaurantId: user.restaurant?.id || null,
   };
 }
 

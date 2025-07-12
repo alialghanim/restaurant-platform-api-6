@@ -7,7 +7,7 @@ export class UpdateRestaurantContactDto {
 
   @IsOptional()
   @IsString()
-  customPhone?: string;
+  contactNumber?: string;
 
   @IsOptional()
   @IsBoolean()

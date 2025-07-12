@@ -1,18 +1,27 @@
 // src/restaurant/item/item.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Item } from '../item/entities/item.entity';
+import { Item } from './entities/item.entity';
 import { Repository } from 'typeorm';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { Category } from '../category/entities/category.entity';
-import { Restaurant } from '../entities/restaurant.entity';
+import { Restaurant } from '../../entities/restaurant.entity';
+import { Section } from './entities/section.entity';
+import { Option } from './entities/option.entity';
+import { UpdateOptionsDto } from './dto/update-options.dto';
 
 @Injectable()
 export class ItemService {
   constructor(
     @InjectRepository(Item)
     private readonly itemRepo: Repository<Item>,
+
+    @InjectRepository(Section)
+private readonly sectionRepo: Repository<Section>,
+
+@InjectRepository(Option)
+private readonly optionRepo: Repository<Option>,
 
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
@@ -41,6 +50,54 @@ export class ItemService {
       throw error;
     }
   }
+
+  async updateOptions(itemId: string, dto: UpdateOptionsDto) {
+  const item = await this.itemRepo.findOne({
+    where: { id: itemId },
+    relations: ['sections', 'sections.options'],
+  });
+
+  if (!item) throw new NotFoundException('Item not found');
+
+  // حذف السكاشن القديمة (سيتم حذف الخيارات تلقائيًا بسبب onDelete: 'CASCADE')
+  await this.sectionRepo.delete({ item: { id: itemId } });
+
+  // إنشاء السكاشن الجديدة
+  const newSections = dto.sections.map((secDto) => {
+    const section = this.sectionRepo.create({
+      title: secDto.title,
+      type: secDto.type,
+      min: secDto.min,
+      max: secDto.max,
+      item: item,
+      options: secDto.options.map((optDto) =>
+        this.optionRepo.create({
+          name: optDto.name,
+          price: optDto.price,
+        }),
+      ),
+    });
+    return section;
+  });
+
+  // حفظها
+  await this.sectionRepo.save(newSections);
+
+  return { message: 'Options updated successfully' };
+}
+
+async getOptions(itemId: string) {
+  const item = await this.itemRepo.findOne({
+    where: { id: itemId },
+    relations: ['sections', 'sections.options'],
+  });
+
+  if (!item) {
+    throw new NotFoundException(`Item with ID "${itemId}" not found`);
+  }
+
+  return { sections: item.sections };
+}
 
   async create(restaurantId: string, dto: CreateItemDto) {
     try {

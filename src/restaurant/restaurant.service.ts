@@ -11,8 +11,8 @@ import { Restaurant } from './entities/restaurant.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { User } from '../user/entities/user.entity';
-import { Category } from './category/entities/category.entity';
-import { Item } from './item/entities/item.entity';
+import { Category } from './menu/category/entities/category.entity';
+import { Item } from './menu/item/entities/item.entity';
 import { In } from 'typeorm';
 import { RestaurantLocationDto } from './dto/restaurant-location.dto';
 
@@ -80,12 +80,10 @@ let restaurant = await this.restaurantRepository.findOne({
     'storeColor',
     'domainName',
     'logo',
-    'customPhone',
     'image',
-    'cuisine',
     'restaurantLocation',
     'status',
-    'phone',
+    'contactNumber',
   ],
 });
 
@@ -169,7 +167,7 @@ async updateIdentityByOwner(ownerId: string, dto: {
 
 async updateContactByOwner(ownerId: string, dto: {
   phone?: string;
-  customPhone?: string;
+  contactNumber?: string;
   useAccountNumber?: boolean;
 }) {
   const restaurant = await this.restaurantRepository.findOne({ where: { ownerId } });
@@ -215,7 +213,7 @@ async updateLocationByOwner(ownerId: string, dto: RestaurantLocationDto) {
   async findMyRestaurants(owner: User): Promise<Restaurant[]> {
   return this.restaurantRepository.find({
     where: { ownerId: owner.id },
-select: ['id', 'name', 'image', 'status', 'phone', 'cuisine'],
+select: ['id', 'name', 'image', 'status', 'contactNumber'],
   });
 }
 
@@ -362,7 +360,7 @@ async remove(id: string, user: User): Promise<void> {
 
   async findAllPublic(): Promise<Partial<Restaurant>[]> {
     return this.restaurantRepository.find({
-      select: ['id', 'name', 'image', 'cuisine'],
+      select: ['id', 'name', 'image'],
     });
   }
 
@@ -394,9 +392,8 @@ async findOnePublic(id: string): Promise<Partial<Restaurant>> {
       'name',
       'image',
       'description',
-      'cuisine',
       'restaurantLocation',
-      'phone',
+      'contactNumber',
       'storeColor',
       'logo',
     ],

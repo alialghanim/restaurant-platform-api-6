@@ -13,52 +13,78 @@ import { User } from '../user/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
+import { Restaurant } from '../restaurant/entities/restaurant.entity'; // تأكد من المسار الصحيح
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    private readonly jwtService: JwtService,
-  ) {}
+ constructor(
+  @InjectRepository(User)
+  private readonly userRepository: Repository<User>,
+  @InjectRepository(Restaurant)
+  private readonly restaurantRepository: Repository<Restaurant>,
+  private readonly jwtService: JwtService,
+) {}
 
-  async register(dto: RegisterDto): Promise<{ access_token: string }> {
+async register(dto: RegisterDto): Promise<{ access_token: string; user: any }> {
   const { name, email, phone, password } = dto;
 
-  const existingUser = await this.userRepository.findOne({
-    where: [{ email }, { name }, { phone }],
-  });
+  const fieldErrors = [];
 
-  if (existingUser) {
-    throw new BadRequestException('User with this email, name, or phone already exists');
+  const existingEmail = await this.userRepository.findOne({ where: { email } });
+  if (existingEmail) fieldErrors.push({ field: "email", message: "Email is already in use" });
+
+  const existingPhone = await this.userRepository.findOne({ where: { phone } });
+  if (existingPhone) fieldErrors.push({ field: "phone", message: "Phone number is already in use" });
+
+  const existingName = await this.userRepository.findOne({ where: { name } });
+  if (existingName) fieldErrors.push({ field: "name", message: "Name is already in use" });
+
+  if (fieldErrors.length > 0) {
+    throw new BadRequestException(fieldErrors);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = this.userRepository.create({
-    name,
-    email,
-    phone,
-    password: hashedPassword,
-  });
-
+  const user = this.userRepository.create({ name, email, phone, password: hashedPassword });
   await this.userRepository.save(user);
+
+  // 👇 هنا نربط المستخدم بالمطعم تلقائيًا
+  const restaurant = this.restaurantRepository.create({
+    name, // يمكن تعديله لاحقًا
+    owner: user,
+  });
+  await this.restaurantRepository.save(restaurant);
 
   const payload = { email: user.email, sub: user.id, name: user.name };
 
   return {
     access_token: this.jwtService.sign(payload),
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      restaurantId: restaurant.id,
+    },
   };
 }
 
   async login(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto);
-    const payload = { email: user.email, sub: user.id, name: user.name };
-    return {
-      message: 'Login successful',
-      access_token: this.jwtService.sign(payload),
-    };
-  }
+  const user = await this.validateUser(loginDto);
+  const payload = { email: user.email, sub: user.id, name: user.name };
+
+  return {
+    message: 'Login successful',
+    access_token: this.jwtService.sign(payload),
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      restaurantId: user.restaurant?.id || null, // ← مهم جدًا
+    },
+  };
+}
 
   async updateName(userId: string, name: string) {
     const user = await this.userRepository.findOneBy({ id: userId });
@@ -93,17 +119,19 @@ export class AuthService {
     return result;
   }
 
-  private async validateUser(loginDto: LoginDto): Promise<Omit<User, 'password'>> {
-    const { email, password } = loginDto;
-    const user = await this.userRepository.findOneBy({ email });
+private async validateUser(loginDto: LoginDto): Promise<User> {
+  const { email, password } = loginDto;
+  const user = await this.userRepository.findOne({
+    where: { email },
+    relations: ['restaurant'], // <-- مهم جدًا
+  });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password: userPassword, ...result } = user;
-      return result;
-    }
-
-    throw new UnauthorizedException(
-      'Invalid credentials. Please check email and password.',
-    );
+  if (user && (await bcrypt.compare(password, user.password))) {
+    return user;
   }
+
+  throw new UnauthorizedException(
+    'Invalid credentials. Please check email and password.',
+  );
+}
 }

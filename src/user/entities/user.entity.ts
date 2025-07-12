@@ -27,6 +27,7 @@ export class User {
 
   @UpdateDateColumn() updatedAt: Date;
 
-  @OneToOne(() => Restaurant, (restaurant) => restaurant.owner)
-  restaurant: Restaurant;
+ @OneToOne(() => Restaurant, (restaurant) => restaurant.owner, { cascade: true })
+restaurant: Restaurant;
+  
 }

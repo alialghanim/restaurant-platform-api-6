@@ -29,7 +29,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { Item } from './item/entities/item.entity';
+import { Item } from './menu/item/entities/item.entity';
 import { RestaurantLocationDto } from './dto/restaurant-location.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -91,6 +91,18 @@ getMyRestaurant(@Req() req: Request) {
   return this.restaurantService.findByOwnerId(user.id);
 }
 
+
+
+@Get('check-name/:name')
+@Public()
+async checkRestaurantName(@Param('name') name: string) {
+  const exists = await this.restaurantRepo.findOne({ where: { name } });
+  if (exists) {
+    return { taken: true };
+  }
+  return { taken: false };
+}
+
 @Get('check-domain/:domain')
 async checkDomain(@Param('domain') domain: string) {
   const exists = await this.restaurantRepo.findOne({ where: { domainName: domain } });
@@ -111,6 +123,14 @@ async checkDomain(@Param('domain') domain: string) {
     }
     return restaurant;
   }
+
+  @Get('me/id')
+getMyRestaurantId(@Req() req: Request) {
+  const user = req.user as User;
+  return this.restaurantService.findByOwnerId(user.id).then((res) => ({
+    id: res.id,
+  }));
+}
 
   @Get('me/location')
 async getMyRestaurantLocation(@Req() req: Request) {

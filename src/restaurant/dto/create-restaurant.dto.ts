@@ -38,7 +38,7 @@ name?: string;
 
   @IsOptional()
   @IsString()
-  customPhone?: string;
+  contactNumber?: string;
 
   @IsOptional()
   @IsString()
