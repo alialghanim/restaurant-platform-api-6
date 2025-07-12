@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.nadine.autopush.backend</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/nadine/Desktop/restaurant-platform-api-6/Library/LaunchAgents/auto-push.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/nadine/Desktop/restaurant-platform-api-6</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/nadine/auto-push-backend.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/nadine/auto-push-backend-error.log</string>
+</dict>
+</plist>
